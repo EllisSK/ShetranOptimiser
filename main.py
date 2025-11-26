@@ -1,7 +1,10 @@
+from pathlib import Path
+
 from shetran_interaction import *
+from results_analysis import *
 
 def main():
-    print("Hello from shetranoptimiser!")
+    config = load_shetran_params(Path("temp/config.json"))
 
 
 if __name__ == "__main__":
