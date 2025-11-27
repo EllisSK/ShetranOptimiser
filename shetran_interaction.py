@@ -37,9 +37,7 @@ def run_shetran(exe_path: Path, rundata_path: Path):
             text=True
         )
 
-        if result.returncode == 0:
-            print("Simulation completed successfully.")
-        else:
+        if not result.returncode == 0:
             print(f"Simulation failed with error:\n {result.stderr}")
 
     except Exception as e:

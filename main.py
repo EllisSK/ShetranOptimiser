@@ -9,11 +9,14 @@ from optimiser import ShetranProblem
 def main():
     config = load_shetran_params(Path("temp/config.json"))
 
-    algorithm = NSGA2()
+    algorithm = NSGA2(pop_size=20, n_offsprings=10, eliminate_duplicates=True)
 
-    problem = ShetranProblem(config)
+    problem = ShetranProblem()
 
-    res = minimize(problem)
+    res = minimize(problem, algorithm, verbose=True)
+
+    print("Optimisation Complete.")
+    print(f"Time taken: {res.exec_time} seconds")
 
 if __name__ == "__main__":
     main()
