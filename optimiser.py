@@ -68,7 +68,7 @@ class ShetranProblem(ElementwiseProblem):
 
         run_xml = run_dir / f"{self.settings["catchment_name"]}_Library_File.xml"
         rundata = run_dir / f"rundata_{self.settings["catchment_name"]}.txt"
-        run_output = run_dir / f""
+        run_output = run_dir / f"output_{self.settings["catchment_name"]}_discharge_sim_regulartimestep"
 
         objectives = [1e10, 1e10, 1e10]
 
