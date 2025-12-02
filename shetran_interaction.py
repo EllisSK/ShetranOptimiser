@@ -83,40 +83,6 @@ def run_preprocessor(prep_exe_path: Path, xml_file_path: Path):
     except Exception as e:
         print(f"An unexpected error occurred: {e}") 
 
-def modify_xml_file(xml_file_path: Path, parameters: dict):
-    """
-    Modify an existing XML file that is an input to the Shetran pre-processor.
-    
-    :param xml_file_path: Full path to XML file location.
-    :type xml_file_path: Path
-    :param parameters: Dictionary of paramaeters and the values to change them to.
-    :type parameters: dict
-    """
-    try:
-        tree = ET.parse(xml_file_path)
-        root = tree.getroot()
-    except ET.ParseError as e:
-        print(f"Error parsing XML: {e}")
-        return
-    
-    table_config = {
-        'VegetationDetails': 'VegetationDetail',
-        'SoilProperties': 'SoilProperty',
-        'SoilDetails': 'SoilDetail'
-    }
-
-    for param_name, new_value in parameters.items():
-        if param_name in table_config:
-            _update_table_entries(root, param_name, table_config[param_name], new_value)
-        else:
-            element = root.find(param_name)
-            if element is not None:
-                element.text = str(new_value)
-            else:
-                print(f"Warning: Tag <{param_name}> not found in XML.")
-
-    tree.write(xml_file_path, encoding='unicode', xml_declaration=True)
-
 def load_shetran_params(json_filepath: Path) -> dict:
     """
     Load a configuration json file of parameters and their bounds.
@@ -127,63 +93,107 @@ def load_shetran_params(json_filepath: Path) -> dict:
     with open(json_filepath, 'r') as f:
         data = json.load(f)
 
-    if "SoilDetails" in data:
-        converted_soil_details = {}
-        for key_str, val in data["SoilDetails"].items():
-            try:
-                key_tuple = tuple(int(x.strip()) for x in key_str.split(','))
-                converted_soil_details[key_tuple] = val
-            except ValueError:
-                print(f"Warning: Could not convert key '{key_str}' to tuple. Keeping as string.")
-                converted_soil_details[key_str] = val
-        
-        data["SoilDetails"] = converted_soil_details
-
     return data
 
-def _update_table_entries(root, table_tag, row_tag, updates):
-    parent = root.find(table_tag)
-    if parent is None:
-        print(f"Warning: Table block <{table_tag}> not found.")
-        return
+def read_xml_file(xml_file_path: Path) -> dict:
+    """
+    Read an XML file that is an input to the Shetran pre-processor.
+    
+    :param xml_file_path: Full path to XML file location.
+    :type xml_file_path: Path
+    """
+    veg_detail_start_idx = 12
+    soil_prop_start_idx = 22
 
-    rows = parent.findall(row_tag)
-    if not rows:
-        return
+    xml_dict = {
+        "VegetationDetails" : [],
+        "SoilProperties" : []
+    }
 
-    header_element = rows[0]
-    header_data = next(csv.reader([header_element.text]))
-    headers = [h.strip() for h in header_data]
+    with open(xml_file_path, "r", encoding="utf-8") as file:
+        xml_list = [line.strip() for line in file]
 
-    for row_id_input, col_updates in updates.items():
-        found_row = False
-        for row_element in rows[1:]:
-            current_csv = next(csv.reader([row_element.text]))
-            current_data = [c.strip() for c in current_csv]
+    for line in range(veg_detail_start_idx, veg_detail_start_idx+7):
+        content = xml_list[line][18:-19]
+        content = content.split(",")
         
-            if table_tag == 'SoilDetails':
-                if isinstance(row_id_input, (list, tuple)) and len(row_id_input) == 2:
-                    if current_data[0] == str(row_id_input[0]) and current_data[1] == str(row_id_input[1]):
-                        _apply_row_updates(row_element, current_data, headers, col_updates)
-                        found_row = True
-                        break
-            
-            else:
-                if current_data[0] == str(row_id_input):
-                    _apply_row_updates(row_element, current_data, headers, col_updates)
-                    found_row = True
-                    break
-        
-        if not found_row:
-            print(f"Warning: ID {row_id_input} not found in {table_tag}")
+        p = {}
+        p["Descriptors"] = {
+            "Veg Type #" : int(content[0]),
+            "Vegetation Type" : content[1]
+        }
+        p["Parameters"] = {
+            "Canopy storage capacity (mm)" : float(content[2]),
+            "Leaf area index" : float(content[3]),
+            "Maximum rooting depth(m)" : float(content[4]),
+            "AE/PE at field capacity" : float(content[5]),
+            "Strickler overland flow coefficient" : float(content[6])
+        }
+        xml_dict["VegetationDetails"].append(p)
 
-def _apply_row_updates(xml_element, data_list, headers, col_updates):
-    for col_name, value in col_updates.items():
-        try:
-            idx = headers.index(col_name)
-            data_list[idx] = str(value)
-            print(f"Updated {col_name} -> {value}")
-        except ValueError:
-            print(f"Error: Column '{col_name}' not found in headers.")
-            
-    xml_element.text = ", ".join(data_list)
+    for line in range(soil_prop_start_idx, soil_prop_start_idx+7):
+        content = xml_list[line][14:-15]
+        content = content.split(",")
+        
+        p = {}
+        p["Descriptors"] = {
+            "Soil Number" : int(content[0]),
+            "Soil Type" : content[1]
+        }
+        p["Parameters"] = {
+            "Saturated Water Content" : float(content[2]),
+            "Residual Water Content" : float(content[3]),
+            "Saturated Conductivity (m/day)" : float(content[4]),
+            "vanGenuchten- alpha (cm-1)" : float(content[5]),
+            "vanGenuchten-n" : float(content[6])
+        }
+        xml_dict["SoilProperties"].append(p)
+
+    return xml_dict
+
+def modify_xml_file(xml_file_path: Path, parameters: dict):
+    """
+    Modify an existing XML file that is an input to the Shetran pre-processor.
+    
+    :param xml_file_path: Full path to XML file location.
+    :type xml_file_path: Path
+    :param parameters: Dictionary of paramaeters and the values to change them to.
+    :type parameters: dict
+    """
+
+    veg_detail_start_idx = 12
+    soil_prop_start_idx = 22
+
+    with open(xml_file_path, "r", encoding="utf-8") as file:
+        xml_list = [line.strip() for line in file]
+
+    for line in range(0, 7):
+        xml_idx = veg_detail_start_idx+line
+        
+        v_num = parameters["VegetationDetails"][line]["Descriptors"]["Veg Type #"]
+        v_type = parameters["VegetationDetails"][line]["Descriptors"]["Vegetation Type"]
+        csc = parameters["VegetationDetails"][line]["Parameters"]["Canopy storage capacity (mm)"]
+        lai = parameters["VegetationDetails"][line]["Parameters"]["Leaf area index"]
+        mrd = parameters["VegetationDetails"][line]["Parameters"]["Maximum rooting depth(m)"]
+        aepe = parameters["VegetationDetails"][line]["Parameters"]["AE/PE at field capacity"]
+        sofc = parameters["VegetationDetails"][line]["Parameters"]["Strickler overland flow coefficient"]
+        
+        content = f"<VegetationDetail>{v_num},{v_type},{csc},{lai},{mrd},{aepe},{sofc}</VegetationDetail>"
+        xml_list[xml_idx] = content
+
+    for line in range(0, 7):
+        xml_idx = soil_prop_start_idx+line
+
+        s_num = parameters["SoilProperties"][line]["Descriptors"]["Soil Number"]
+        s_type = parameters["SoilProperties"][line]["Descriptors"]["Soil Type"]
+        sws = parameters["SoilProperties"][line]["Parameters"]["Saturated Water Content"]
+        rwc = parameters["SoilProperties"][line]["Parameters"]["Residual Water Content"]
+        sc = parameters["SoilProperties"][line]["Parameters"]["Saturated Conductivity (m/day)"]
+        vga = parameters["SoilProperties"][line]["Parameters"]["vanGenuchten- alpha (cm-1)"]
+        vgn = parameters["SoilProperties"][line]["Parameters"]["vanGenuchten-n"]
+
+        content = f"<SoilProperty>{s_num},{s_type},{sws},{rwc},{sc},{vga},{vgn}</SoilProperty>"
+        xml_list[xml_idx] = content
+
+    with open(xml_file_path, "w", encoding="utf-8") as file:
+        file.write("\n".join(xml_list))

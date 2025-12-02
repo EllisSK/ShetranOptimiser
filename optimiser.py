@@ -23,21 +23,18 @@ class ShetranProblem(ElementwiseProblem):
         self.observed = self.base_dir / f"{self.settings["observed_data"]}"
         self.log = self.base_dir / "log.csv"
         self.lock = lock
+        self.master_dict = read_xml_file(self.master_xml)
         
         params_to_optimise = []
         
-        for table_name, rows in config.items():
-            for row_id, columns in rows.items():
-                for col_name, details in columns.items():
-                    row_str = str(row_id).replace('(', '').replace(')', '')
-                    param_name = f"{table_name} [ID:{row_str}] - {col_name}"
-                    params_to_optimise.append({
-                        "name": param_name,
-                        "table": table_name,
-                        "row_id": row_id,
-                        "col_name": col_name,
-                        "bounds": details["bounds"]
-                    })
+        for section, s_list in config.items():
+            if section == "VegetationDetails":
+                for row in s_list:
+                    for param, bounds in row["Parameters"].items():
+                        p = {}
+                        p["name"] = f"{row["Descriptors"].items()[0][0]}{row["Descriptors"].items()[0][1]}{param}"
+                        p["bounds"] = bounds
+                        p["section"] = section
 
         self.pto = params_to_optimise
 
@@ -78,13 +75,8 @@ class ShetranProblem(ElementwiseProblem):
             shutil.copy(self.master_xml, run_xml)
 
             update_dict = {}
-            for i, param_def in enumerate(self.pto):
-                val = x[i]
-                if param_def["table"] not in update_dict:
-                    update_dict[param_def["table"]] = {}
-                if param_def["row_id"] not in update_dict[param_def["table"]]:
-                    update_dict[param_def["table"]][param_def["row_id"]] = {}
-                update_dict[param_def["table"]][param_def["row_id"]][param_def["col_name"]] = val
+
+            #Fill update_dict
 
             modify_xml_file(run_xml, update_dict)
 
