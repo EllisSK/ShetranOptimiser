@@ -161,7 +161,6 @@ def modify_xml_file(xml_file_path: Path, parameters: dict):
     :param parameters: Dictionary of paramaeters and the values to change them to.
     :type parameters: dict
     """
-    print(parameters)
 
     veg_detail_start_idx = 12
     soil_prop_start_idx = 22
