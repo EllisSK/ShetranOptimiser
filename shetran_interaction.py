@@ -33,7 +33,7 @@ def run_shetran(exe_path: Path, rundata_path: Path):
         result = subprocess.run(
             command,
             cwd=working_dir,
-            capture_output=True,
+            capture_output=False,
             text=True
         )
 
@@ -78,7 +78,7 @@ def run_preprocessor(prep_exe_path: Path, xml_file_path: Path):
         if result.returncode == 0:
             print("Pre-processing completed successfully.")
         else:
-            print("Pre-processing failed with error: {result.stderr}")
+            print(f"Pre-processing failed with error: {result.stderr}")
 
     except Exception as e:
         print(f"An unexpected error occurred: {e}") 
@@ -160,6 +160,7 @@ def modify_xml_file(xml_file_path: Path, parameters: dict):
     :param parameters: Dictionary of paramaeters and the values to change them to.
     :type parameters: dict
     """
+    print(parameters)
 
     veg_detail_start_idx = 12
     soil_prop_start_idx = 22
@@ -172,13 +173,13 @@ def modify_xml_file(xml_file_path: Path, parameters: dict):
         
         v_num = parameters["VegetationDetails"][line]["Descriptors"]["Veg Type #"]
         v_type = parameters["VegetationDetails"][line]["Descriptors"]["Vegetation Type"]
-        csc = parameters["VegetationDetails"][line]["Parameters"]["Canopy storage capacity (mm)"]
-        lai = parameters["VegetationDetails"][line]["Parameters"]["Leaf area index"]
-        mrd = parameters["VegetationDetails"][line]["Parameters"]["Maximum rooting depth(m)"]
-        aepe = parameters["VegetationDetails"][line]["Parameters"]["AE/PE at field capacity"]
-        sofc = parameters["VegetationDetails"][line]["Parameters"]["Strickler overland flow coefficient"]
+        csc = float(parameters["VegetationDetails"][line]["Parameters"]["Canopy storage capacity (mm)"])
+        lai = float(parameters["VegetationDetails"][line]["Parameters"]["Leaf area index"])
+        mrd = float(parameters["VegetationDetails"][line]["Parameters"]["Maximum rooting depth(m)"])
+        aepe = float(parameters["VegetationDetails"][line]["Parameters"]["AE/PE at field capacity"])
+        sofc = float(parameters["VegetationDetails"][line]["Parameters"]["Strickler overland flow coefficient"])
         
-        content = f"<VegetationDetail>{v_num},{v_type},{csc},{lai},{mrd},{aepe},{sofc}</VegetationDetail>"
+        content = f"<VegetationDetail>{v_num},{v_type}, {float(csc):.1f}, {float(lai):.1f}, {float(mrd):.1f}, {float(aepe):.1f}, {float(sofc):.1f}</VegetationDetail>"
         xml_list[xml_idx] = content
 
     for line in range(0, 7):
@@ -192,8 +193,10 @@ def modify_xml_file(xml_file_path: Path, parameters: dict):
         vga = parameters["SoilProperties"][line]["Parameters"]["vanGenuchten- alpha (cm-1)"]
         vgn = parameters["SoilProperties"][line]["Parameters"]["vanGenuchten-n"]
 
-        content = f"<SoilProperty>{s_num},{s_type},{sws},{rwc},{sc},{vga},{vgn}</SoilProperty>"
+        content = f"<SoilProperty>{s_num},{s_type}, {float(sws):.4f}, {float(rwc):.4f}, {float(sc):.4f}, {float(vga):.4f}, {float(vgn):.4f}</SoilProperty>"
         xml_list[xml_idx] = content
+
+    xml_list.append("")
 
     with open(xml_file_path, "w", encoding="utf-8") as file:
         file.write("\n".join(xml_list))

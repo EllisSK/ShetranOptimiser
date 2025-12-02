@@ -3,6 +3,7 @@ import os
 import shutil
 import multiprocessing
 import time
+import copy
 
 import numpy as np
 import pandas as pd
@@ -24,17 +25,21 @@ class ShetranProblem(ElementwiseProblem):
         self.log = self.base_dir / "log.csv"
         self.lock = lock
         self.master_dict = read_xml_file(self.master_xml)
+        self.tocopy = self.base_dir / "tocopy"
         
         params_to_optimise = []
         
         for section, s_list in config.items():
-            if section == "VegetationDetails":
-                for row in s_list:
-                    for param, bounds in row["Parameters"].items():
-                        p = {}
-                        p["name"] = f"{row["Descriptors"].items()[0][0]}{row["Descriptors"].items()[0][1]}{param}"
-                        p["bounds"] = bounds
-                        p["section"] = section
+            for row in s_list:
+                for param, bounds in row["Parameters"].items():
+                    p = {}
+                    descriptor_item = list(row["Descriptors"].items())[0]
+                    p["name"] = f"{descriptor_item[0]}{descriptor_item[1]}{param}"
+                    p["param_name"] = param
+                    p["bounds"] = bounds
+                    p["Section"] = section
+                    p["Descriptors"] = row["Descriptors"]
+                    params_to_optimise.append(p)
 
         self.pto = params_to_optimise
 
@@ -66,17 +71,27 @@ class ShetranProblem(ElementwiseProblem):
         run_xml = run_dir / f"{self.settings["catchment_name"]}_Library_File.xml"
         rundata = run_dir / f"rundata_{self.settings["catchment_name"]}.txt"
         run_output = run_dir / f"output_{self.settings["catchment_name"]}_discharge_sim_regulartimestep"
+        run_help = run_dir / "helpmessages"
 
         objectives = [1e10, 1e10, 1e10]
 
         try:
             os.makedirs(run_dir, exist_ok=True)
+            os.makedirs(run_help, exist_ok=True)
 
-            shutil.copy(self.master_xml, run_xml)
+            shutil.copytree(self.tocopy, run_dir, dirs_exist_ok=True)
 
-            update_dict = {}
+            update_dict = copy.deepcopy(self.master_dict)
 
-            #Fill update_dict
+            for i, prop in enumerate(self.pto):
+                section = prop["Section"]
+                descriptors = prop["Descriptors"]
+                param_key = prop["param_name"]
+
+                for row in update_dict[section]:
+                    if row["Descriptors"] == descriptors:
+                        row["Parameters"][param_key] = x[i]
+                        break
 
             modify_xml_file(run_xml, update_dict)
 
@@ -89,8 +104,10 @@ class ShetranProblem(ElementwiseProblem):
                 out["F"] = list(objectives)
             else:
                 out["F"] = objectives
+                print("Runout doesnt exist")
         except:
             out["F"] = objectives
+            print("something else 1")
         finally:
             try:
                timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -103,5 +120,5 @@ class ShetranProblem(ElementwiseProblem):
             except Exception as log_err:
                 print(f"Logging failed for {run_id}: {log_err}")
            
-            if os.path.exists(run_dir):
-                shutil.rmtree(run_dir, ignore_errors=True)
+            #if os.path.exists(run_dir):
+           #     shutil.rmtree(run_dir, ignore_errors=True)

@@ -14,7 +14,7 @@ from optimiser import ShetranProblem
 
 def main():
     
-    config = load_shetran_params(Path("temp/config.json"))
+    config = load_shetran_params(Path("temp/full_config.json"))
 
     settings = {
         "catchment_name" : sys.argv[1],
@@ -32,11 +32,11 @@ def main():
         pool = ThreadPool(n_threads)
         runner = StarmapParallelization(pool.starmap)
 
-        algorithm = NSGA2(pop_size=50, n_offsprings=10, eliminate_duplicates=True)
+        algorithm = NSGA2(pop_size=1, n_offsprings=10, eliminate_duplicates=True)
 
         problem = ShetranProblem(config, settings, shared_lock, elementwise_runner=runner)
 
-        res = minimize(problem, algorithm, termination=get_termination("n_gen", 40), verbose=True)
+        res = minimize(problem, algorithm, termination=get_termination("n_gen", 1), verbose=True)
 
         pool.close()
 
