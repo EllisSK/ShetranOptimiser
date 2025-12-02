@@ -57,11 +57,8 @@ def calculate_objective_function_metrics(observed_values: Path, simulated_values
     obs_df = pd.read_csv(
         observed_values,
         skiprows=20,
-        usecols=[0,1],
-        header=None,
-        names=["Date", "ObservedFlow"],
-        parse_dates=[0],
-        index_col=0
+        usecols=[1],
+        names=["ObservedFlow"],
     )
 
     sim_df = pd.read_csv(
@@ -70,7 +67,9 @@ def calculate_objective_function_metrics(observed_values: Path, simulated_values
         skiprows=1,
         names=["SimulatedFlow"]
     )
-    
+
+    obs_df = obs_df.interpolate()
+
     kge = calculate_KGE(obs_df["ObservedFlow"], sim_df["SimulatedFlow"])
 
     obs_df["LogObservedFlow"] = np.log(obs_df["ObservedFlow"].clip(lower=0.01))

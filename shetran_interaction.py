@@ -33,8 +33,9 @@ def run_shetran(exe_path: Path, rundata_path: Path):
         result = subprocess.run(
             command,
             cwd=working_dir,
-            capture_output=False,
-            text=True
+            capture_output=True,
+            text=True,
+            timeout=300
         )
 
         if not result.returncode == 0:
