@@ -57,9 +57,11 @@ def calculate_objective_function_metrics(observed_values: Path, simulated_values
     obs_df = pd.read_csv(
         observed_values,
         skiprows=20,
-        usecols=[1],
-        names=["ObservedFlow"],
+        usecols=[0, 1],
+        names=["Date","ObservedFlow"],
     )
+
+    obs_df = obs_df.set_index("Date")
 
     sim_df = pd.read_csv(
         simulated_values,
@@ -68,18 +70,24 @@ def calculate_objective_function_metrics(observed_values: Path, simulated_values
         names=["SimulatedFlow"]
     )
 
+    sim_df.index = obs_df.index
+
     obs_df = obs_df.interpolate()
 
-    kge = calculate_KGE(obs_df["ObservedFlow"], sim_df["SimulatedFlow"])
+    model_df = pd.concat([obs_df, sim_df], axis=1)
 
-    obs_df["LogObservedFlow"] = np.log(obs_df["ObservedFlow"].clip(lower=0.01))
-    sim_df["LogSimulatedFlow"] = np.log(sim_df["SimulatedFlow"].clip(lower=0.01))
+    model_df = model_df["1992-01-01":"2001-12-31"]
 
-    log_kge = calculate_KGE(obs_df["LogObservedFlow"], sim_df["LogSimulatedFlow"])
+    kge = calculate_KGE(model_df["ObservedFlow"], model_df["SimulatedFlow"])
+
+    model_df["LogObservedFlow"] = np.log(model_df["ObservedFlow"].clip(lower=0.001))
+    model_df["LogSimulatedFlow"] = np.log(model_df["SimulatedFlow"].clip(lower=0.001))
+
+    log_kge = calculate_KGE(model_df["LogObservedFlow"], model_df["LogSimulatedFlow"])
 
     fdc_rmse = calculate_RMSE(
-        obs_df["ObservedFlow"].sort_values(ascending=False),
-        sim_df["SimulatedFlow"].sort_values(ascending=False)
+        model_df["ObservedFlow"].sort_values(ascending=False),
+        model_df["SimulatedFlow"].sort_values(ascending=False)
     )
 
     return (1-kge, 1-log_kge, fdc_rmse)
