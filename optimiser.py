@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 from pymoo.core.problem import ElementwiseProblem
+from pymoo.core.callback import Callback
 
 from shetran_interaction import *
 from results_analysis import *
@@ -70,7 +71,7 @@ class ShetranProblem(ElementwiseProblem):
 
         run_xml = run_dir / f"{self.settings["catchment_name"]}_Library_File.xml"
         rundata = run_dir / f"rundata_{self.settings["catchment_name"]}.txt"
-        run_output = run_dir / f"output_{self.settings["catchment_name"]}_discharge_sim_regulartimestep"
+        run_output = run_dir / f"output_{self.settings["catchment_name"]}_discharge_sim_regulartimestep.txt"
         run_help = run_dir / "helpmessages"
 
         objectives = [1e10, 1e10, 1e10]
@@ -98,27 +99,32 @@ class ShetranProblem(ElementwiseProblem):
             run_preprocessor(self.preprocessor, run_xml)
 
             run_shetran(self.shetran, rundata)
-
-            if run_output.exists():
+            with self.lock:
                 objectives = calculate_objective_function_metrics(self.observed, run_output)
-                out["F"] = list(objectives)
-            else:
-                out["F"] = objectives
-                print("Runout doesnt exist")
+            out["F"] = list(objectives)
+
         except:
             out["F"] = objectives
-            print("something else 1")
         finally:
             try:
-               timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-               log_row = [timestamp, run_id] + list(x) + list(objectives)
-               with self.lock:
+                timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+                log_row = [timestamp, run_id] + list(x) + list(objectives)
+                with self.lock:
                     with open(self.log, "a", newline="") as f:
                         writer = csv.writer(f)
-                        writer.writerow(log_row)     
+                        writer.writerow(log_row)
+                
+                print(f"Logging successful for {run_id}!")     
 
             except Exception as log_err:
                 print(f"Logging failed for {run_id}: {log_err}")
            
-            #if os.path.exists(run_dir):
-           #     shutil.rmtree(run_dir, ignore_errors=True)
+#            if os.path.exists(run_dir):
+#                shutil.rmtree(run_dir, ignore_errors=True)
+
+class MyCallback(Callback):
+    def __init__(self):
+        super().__init__()
+
+    def notify(self, algorithm):
+        print(f"Running Generation Number {algorithm.n_gen}")

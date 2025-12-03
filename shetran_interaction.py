@@ -27,7 +27,7 @@ def run_shetran(exe_path: Path, rundata_path: Path):
     
     command = [str(exe_path), '-f', str(rundata_path)]
     
-    print(f"Starting SHETRAN run for: {rundata_path.name}...")
+    print(f"Starting SHETRAN run for: {rundata_path.name}")
 
     try:
         result = subprocess.run(
@@ -35,7 +35,7 @@ def run_shetran(exe_path: Path, rundata_path: Path):
             cwd=working_dir,
             capture_output=True,
             text=True,
-            timeout=300
+            timeout=900
         )
 
         if not result.returncode == 0:
@@ -65,8 +65,7 @@ def run_preprocessor(prep_exe_path: Path, xml_file_path: Path):
     
     command = [str(prep_exe_path), str(xml_file_path)]
     
-    print(f"Starting Pre-processor run for: {xml_file_path.name}...")
-    print(f"Working Directory: {working_dir}")
+    print(f"Starting Pre-processor run for: {xml_file_path.name}")
 
     try:
         result = subprocess.run(
@@ -77,7 +76,7 @@ def run_preprocessor(prep_exe_path: Path, xml_file_path: Path):
         )
 
         if result.returncode == 0:
-            print("Pre-processing completed successfully.")
+            print("Pre-processing completed successfully for.")
         else:
             print(f"Pre-processing failed with error: {result.stderr}")
 
@@ -179,7 +178,7 @@ def modify_xml_file(xml_file_path: Path, parameters: dict):
         aepe = float(parameters["VegetationDetails"][line]["Parameters"]["AE/PE at field capacity"])
         sofc = float(parameters["VegetationDetails"][line]["Parameters"]["Strickler overland flow coefficient"])
         
-        content = f"<VegetationDetail>{v_num},{v_type}, {float(csc):.1f}, {float(lai):.1f}, {float(mrd):.1f}, {float(aepe):.1f}, {float(sofc):.1f}</VegetationDetail>"
+        content = f"<VegetationDetail>{v_num},{v_type}, {float(csc)}, {float(lai)}, {float(mrd)}, {float(aepe)}, {float(sofc)}</VegetationDetail>"
         xml_list[xml_idx] = content
 
     for line in range(0, 7):
@@ -193,7 +192,7 @@ def modify_xml_file(xml_file_path: Path, parameters: dict):
         vga = parameters["SoilProperties"][line]["Parameters"]["vanGenuchten- alpha (cm-1)"]
         vgn = parameters["SoilProperties"][line]["Parameters"]["vanGenuchten-n"]
 
-        content = f"<SoilProperty>{s_num},{s_type}, {float(sws):.4f}, {float(rwc):.4f}, {float(sc):.4f}, {float(vga):.4f}, {float(vgn):.4f}</SoilProperty>"
+        content = f"<SoilProperty>{s_num},{s_type}, {float(sws)}, {float(rwc)}, {float(sc)}, {float(vga)}, {float(vgn)}</SoilProperty>"
         xml_list[xml_idx] = content
 
     xml_list.append("")
