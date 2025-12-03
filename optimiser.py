@@ -121,10 +121,3 @@ class ShetranProblem(ElementwiseProblem):
            
             if os.path.exists(run_dir):
                 shutil.rmtree(run_dir, ignore_errors=True)
-
-class MyCallback(Callback):
-    def __init__(self):
-        super().__init__()
-
-    def notify(self, algorithm):
-        print(f"Running Generation Number {algorithm.n_gen}")

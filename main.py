@@ -10,7 +10,7 @@ from multiprocessing.pool import ThreadPool
 
 from shetran_interaction import *
 from results_analysis import *
-from optimiser import ShetranProblem, MyCallback
+from optimiser import ShetranProblem
 
 def main():
     
@@ -32,7 +32,7 @@ def main():
         pool = ThreadPool(n_threads)
         runner = StarmapParallelization(pool.starmap)
 
-        algorithm = NSGA2(pop_size=64, n_offsprings=64, eliminate_duplicates=True, callback=MyCallback())
+        algorithm = NSGA2(pop_size=64, n_offsprings=64, eliminate_duplicates=True)
 
         problem = ShetranProblem(config, settings, shared_lock, elementwise_runner=runner)
 
