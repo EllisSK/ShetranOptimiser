@@ -32,7 +32,7 @@ def run_shetran(exe_path: Path, rundata_path: Path):
 
     try:
         result = subprocess.run(
-            command, cwd=working_dir, capture_output=True, text=True, timeout=900
+            command, cwd=working_dir, capture_output=True, text=True, timeout=1200
         )
 
         if not result.returncode == 0:
