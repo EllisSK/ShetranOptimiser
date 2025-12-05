@@ -60,7 +60,7 @@ class ShetranProblem(ElementwiseProblem):
         xu = np.array([p["bounds"][1] for p in self.pto])
 
         super().__init__(
-            n_var=len(self.pto), n_obj=3, n_constr=0, xl=xl, xu=xu, **kwargs
+            n_var=len(self.pto), n_obj=3, n_constr=1, xl=xl, xu=xu, **kwargs
         )
 
     def _evaluate(self, x, out, *args, **kwargs):
@@ -106,7 +106,7 @@ class ShetranProblem(ElementwiseProblem):
                     self.observed, run_output
                 )
             out["F"] = list(objectives)
-
+            out["G"] = [0]
         except:
             out["F"] = objectives
             out["G"] = [1]
