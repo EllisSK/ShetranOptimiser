@@ -1,0 +1,11 @@
+Setting names must be followed by a colon and a space before the setting value.
+This file is read from the 5th line onwards.
+
+
+Catchment Name: Colne_at_Lexden
+Base Project Directory: 
+Observed Data:
+Config Path:
+Shetran Path:
+Shetran Prepare Path:
+Checkpoint Path:

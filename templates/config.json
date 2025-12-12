@@ -1,0 +1,186 @@
+{
+  "VegetationDetails": [
+    {
+      "Descriptors": {
+        "Veg Type #": 1,
+        "Vegetation Type": "Arable"
+      },
+      "Parameters": {
+        "Canopy storage capacity (mm)": [0.5, 2.0],
+        "Leaf area index": [0, 5],
+        "Maximum rooting depth(m)": [0.6, 1.2],
+        "AE/PE at field capacity": [0.4, 1.15],
+        "Strickler overland flow coefficient": [15, 30]
+      }
+    },
+    {
+      "Descriptors": {
+        "Veg Type #": 2,
+        "Vegetation Type": "BareGround"
+      },
+      "Parameters": {
+        "Canopy storage capacity (mm)": [0, 0.5],
+        "Maximum rooting depth(m)": [0, 0.3],
+        "AE/PE at field capacity": [0.3, 0.5],
+        "Strickler overland flow coefficient": [30, 50]
+      }
+    },
+    {
+      "Descriptors": {
+        "Veg Type #": 3,
+        "Vegetation Type": "Grass"
+      },
+      "Parameters": {
+        "Canopy storage capacity (mm)": [1, 2],
+        "Leaf area index": [2, 4.5],
+        "Maximum rooting depth(m)": [0.5, 1],
+        "Strickler overland flow coefficient": [20, 35]
+      }
+    },
+    {
+      "Descriptors": {
+        "Veg Type #": 4,
+        "Vegetation Type": "DeciduousForest"
+      },
+      "Parameters": {
+        "Canopy storage capacity (mm)": [1, 2.5],
+        "Leaf area index": [0.5, 6],
+        "Maximum rooting depth(m)": [2, 3.5],
+        "AE/PE at field capacity": [1, 1.2],
+        "Strickler overland flow coefficient": [5, 12]
+      }
+    },
+    {
+      "Descriptors": {
+        "Veg Type #": 5,
+        "Vegetation Type": "EvergreenForest"
+      },
+      "Parameters": {
+        "Canopy storage capacity (mm)": [2, 3.5],
+        "Leaf area index": [5, 7],
+        "Maximum rooting depth(m)": [1.5, 2.5],
+        "AE/PE at field capacity": [1.2, 1.4],
+        "Strickler overland flow coefficient": [5, 10]
+      }
+    },
+    {
+      "Descriptors": {
+        "Veg Type #": 6,
+        "Vegetation Type": "Shrub"
+      },
+      "Parameters": {
+        "Canopy storage capacity (mm)": [1, 1.5],
+        "Leaf area index": [2, 4],
+        "Maximum rooting depth(m)": [1, 2],
+        "AE/PE at field capacity": [0.9, 1],
+        "Strickler overland flow coefficient": [15, 20]
+      }
+    },
+    {
+      "Descriptors": {
+        "Veg Type #": 7,
+        "Vegetation Type": "Urban"
+      },
+      "Parameters": {
+        "Canopy storage capacity (mm)": [0.5, 1],
+        "Leaf area index": [0.5, 1.5],
+        "Maximum rooting depth(m)": [0, 0.5],
+        "AE/PE at field capacity": [0.7, 0.8],
+        "Strickler overland flow coefficient": [40, 80]
+      }
+    }
+  ],
+  "SoilProperties": [
+    {
+      "Descriptors": {
+        "Soil Number": 1,
+        "Soil Type": "soil_top_peat"
+      },
+      "Parameters": {
+        "Saturated Water Content": [0.8, 0.95],
+        "Residual Water Content": [0.15, 0.3],
+        "Saturated Conductivity (m/day)": [0.5, 10],
+        "vanGenuchten- alpha (cm-1)": [0.03, 0.08],
+        "vanGenuchten-n": [1.3, 1.8]
+      }
+    },
+    {
+      "Descriptors": {
+        "Soil Number": 2,
+        "Soil Type": "soil_top_Medium"
+      },
+      "Parameters": {
+        "Saturated Water Content": [0.4, 0.46],
+        "Residual Water Content": [0.04, 0.07],
+        "Saturated Conductivity (m/day)": [0.2, 1],
+        "vanGenuchten- alpha (cm-1)": [0.01, 0.03],
+        "vanGenuchten-n": [1.4, 1.6]
+      }
+    },
+    {
+      "Descriptors": {
+        "Soil Number": 3,
+        "Soil Type": "soil_sub_peat"
+      },
+      "Parameters": {
+        "Saturated Water Content": [0.75, 0.85],
+        "Residual Water Content": [0.2, 0.35],
+        "Saturated Conductivity (m/day)": [0.01, 0.1],
+        "vanGenuchten- alpha (cm-1)": [0.01, 0.02],
+        "vanGenuchten-n": [1.2, 1.4]
+      }
+    },
+    {
+      "Descriptors": {
+        "Soil Number": 4,
+        "Soil Type": "soil_sub_fine"
+      },
+      "Parameters": {
+        "Saturated Water Content": [0.45, 0.55],
+        "Residual Water Content": [0.08, 0.12],
+        "Saturated Conductivity (m/day)": [0.005, 0.1],
+        "vanGenuchten- alpha (cm-1)": [0.005, 0.015],
+        "vanGenuchten-n": [1.1, 1.3]
+      }
+    },
+    {
+      "Descriptors": {
+        "Soil Number": 5,
+        "Soil Type": "HighlyProductiveAquifer"
+      },
+      "Parameters": {
+        "Saturated Water Content": [0.2, 0.35],
+        "Residual Water Content": [0.02, 0.05],
+        "Saturated Conductivity (m/day)": [1, 100],
+        "vanGenuchten- alpha (cm-1)": [0.01, 0.05],
+        "vanGenuchten-n": [1.5, 3]
+      }
+    },
+    {
+      "Descriptors": {
+        "Soil Number": 6,
+        "Soil Type": "LowProductivityAquifer"
+      },
+      "Parameters": {
+        "Saturated Water Content": [0.01, 0.05],
+        "Residual Water Content": [0.001, 0.01],
+        "Saturated Conductivity (m/day)": [0.001, 0.5],
+        "vanGenuchten- alpha (cm-1)": [0.01, 0.1],
+        "vanGenuchten-n": [1.5, 2]
+      }
+    },
+    {
+      "Descriptors": {
+        "Soil Number": 7,
+        "Soil Type": "NoGroundwater"
+      },
+      "Parameters": {
+        "Saturated Water Content": [0.35, 0.5],
+        "Residual Water Content": [0.1, 0.15],
+        "Saturated Conductivity (m/day)": [0.00001, 0.0001],
+        "vanGenuchten- alpha (cm-1)": [0.001, 0.005],
+        "vanGenuchten-n": [1.1, 1.2]
+      }
+    }
+  ]
+}
