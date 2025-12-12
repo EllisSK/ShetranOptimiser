@@ -10,9 +10,9 @@ from pymoo.parallelization.starmap import StarmapParallelization
 from multiprocessing import cpu_count, Manager
 from multiprocessing.pool import ThreadPool
 
-from shetran_interaction import *
-from results_analysis import *
-from optimiser import ShetranProblem, Checkpoint
+from .shetran_interaction import *
+from .results_analysis import *
+from .optimiser import ShetranProblem, Checkpoint
 
 
 def main():

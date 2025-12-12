@@ -9,3 +9,6 @@ dependencies = [
     "pandas>=2.3.3",
     "pymoo>=0.6.1.6",
 ]
+
+[project.scripts]
+shetran-optimise = "shetran-optimise.main.app"
