@@ -17,16 +17,16 @@ from .results_analysis import *
 
 
 class ShetranProblem(ElementwiseProblem):
-    def __init__(self, config: dict, settings: dict, lock, **kwargs):
-        self.settings = settings
+    def __init__(self, config: dict, run_settings: dict, lock, **kwargs):
+        self.run_settings = run_settings
 
-        self.base_dir = Path(f"{self.settings['base_project_directory']}")
+        self.base_dir = Path(f"{self.run_settings['base_project_directory']}")
         self.master_xml = (
-            self.base_dir / f"{self.settings['catchment_name']}_Library_File.xml"
+            self.base_dir / f"{self.run_settings['catchment_name']}_Library_File.xml"
         )
-        self.preprocessor = Path(self.settings["preprocessor_path"])
-        self.shetran = Path(self.settings["shetran_path"])
-        self.observed = self.base_dir / f"{self.settings['observed_data']}"
+        self.preprocessor = Path(self.run_settings["preprocessor_path"])
+        self.shetran = Path(self.run_settings["shetran_path"])
+        self.observed = self.base_dir / f"{self.run_settings['observed_data']}"
         self.log = self.base_dir / "log.csv"
         self.lock = lock
         self.master_dict = read_xml_file(self.master_xml)
@@ -35,16 +35,19 @@ class ShetranProblem(ElementwiseProblem):
         params_to_optimise = []
 
         for section, s_list in config.items():
-            for row in s_list:
-                for param, bounds in row["Parameters"].items():
-                    p = {}
-                    descriptor_item = list(row["Descriptors"].items())[0]
-                    p["name"] = f"{descriptor_item[0]}{descriptor_item[1]}{param}"
-                    p["param_name"] = param
-                    p["bounds"] = bounds
-                    p["Section"] = section
-                    p["Descriptors"] = row["Descriptors"]
-                    params_to_optimise.append(p)
+            if section == "CatchmentDetails":
+                pass
+            else:
+                for row in s_list:
+                    for param, bounds in row["Parameters"].items():
+                        p = {}
+                        descriptor_item = list(row["Descriptors"].items())[0]
+                        p["name"] = f"{descriptor_item[0]}{descriptor_item[1]}{param}"
+                        p["param_name"] = param
+                        p["bounds"] = bounds
+                        p["Section"] = section
+                        p["Descriptors"] = row["Descriptors"]
+                        params_to_optimise.append(p)
 
         self.pto = params_to_optimise
 
@@ -68,11 +71,11 @@ class ShetranProblem(ElementwiseProblem):
 
         run_dir = self.base_dir / "runs" / f"run_{run_id}"
 
-        run_xml = run_dir / f"{self.settings['catchment_name']}_Library_File.xml"
-        rundata = run_dir / f"rundata_{self.settings['catchment_name']}.txt"
+        run_xml = run_dir / f"{self.run_settings['catchment_name']}_Library_File.xml"
+        rundata = run_dir / f"rundata_{self.run_settings['catchment_name']}.txt"
         run_output = (
             run_dir
-            / f"output_{self.settings['catchment_name']}_discharge_sim_regulartimestep.txt"
+            / f"output_{self.run_settings['catchment_name']}_discharge_sim_regulartimestep.txt"
         )
         run_help = run_dir / "helpmessages"
 
@@ -124,9 +127,18 @@ class ShetranProblem(ElementwiseProblem):
             except Exception as log_err:
                 print(f"Logging failed for {run_id}: {log_err}")
 
-            if os.path.exists(run_dir):
-                shutil.rmtree(run_dir, ignore_errors=True)
+            #if os.path.exists(run_dir):
+                #shutil.rmtree(run_dir, ignore_errors=True)
 
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        if "lock" in state:
+            del state["lock"]
+        return state
+    
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.lock = None
 
 class Checkpoint(Callback):
     def __init__(self, filename="checkpoint.pkl"):

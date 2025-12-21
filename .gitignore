@@ -13,3 +13,4 @@ wheels/
 # Other
 temp/
 notes/
+.env

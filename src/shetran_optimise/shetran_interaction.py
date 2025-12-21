@@ -28,7 +28,7 @@ def run_shetran(exe_path: Path, rundata_path: Path):
 
     command = [str(exe_path), "-f", str(rundata_path)]
 
-    print(f"Starting SHETRAN run for: {rundata_path.name}")
+    print(f"Starting SHETRAN run for: {working_dir.name}")
 
     try:
         result = subprocess.run(
@@ -36,7 +36,9 @@ def run_shetran(exe_path: Path, rundata_path: Path):
         )
 
         if not result.returncode == 0:
-            print(f"Simulation failed with error:\n {result.stderr}")
+            print(f"Run ID {working_dir.name} failed with error:\n {result.stderr}")
+        else:
+            print(f"SHETRAN run completed successfully for: {working_dir.name}")
 
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
@@ -63,7 +65,7 @@ def run_preprocessor(prep_exe_path: Path, xml_file_path: Path):
 
     command = [str(prep_exe_path), str(xml_file_path)]
 
-    print(f"Starting Pre-processor run for: {xml_file_path.name}")
+    print(f"Starting Pre-processor run for: {working_dir.name}")
 
     try:
         result = subprocess.run(
@@ -71,9 +73,9 @@ def run_preprocessor(prep_exe_path: Path, xml_file_path: Path):
         )
 
         if result.returncode == 0:
-            print("Pre-processing completed successfully for.")
+            print(f"Pre-processing completed successfully for: {working_dir.name}")
         else:
-            print(f"Pre-processing failed with error: {result.stderr}")
+            print(f"Pre-processing of {working_dir.name} failed with error: {result.stderr}")
 
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
@@ -86,10 +88,13 @@ def load_shetran_params(json_filepath: Path) -> dict:
     :param json_filepath: Full file path to config json.
     :type json_filepaths: Path
     """
-    with open(json_filepath, "r") as f:
-        data = json.load(f)
+    try:
+        with open(json_filepath, "r") as f:
+            data = json.load(f)
 
-    return data
+        return data
+    except:
+        raise Exception(f"Could not load shetran param config!") from None
 
 
 def read_xml_file(xml_file_path: Path) -> dict:

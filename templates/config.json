@@ -1,4 +1,7 @@
 {
+  "CatchmentDetails": {
+    "CatchmentName" : "Colne_at_Lexden"
+  },
   "VegetationDetails": [
     {
       "Descriptors": {
