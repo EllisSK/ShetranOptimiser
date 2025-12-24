@@ -5,7 +5,7 @@ import dill
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from pymoo.optimize import minimize
-from pymoo.algorithms.moo.nsga2 import NSGA2
+from pymoo.algorithms.moo.nsga2 import NSGA2, PM, SBX
 from pymoo.termination import get_termination
 from pymoo.parallelization.starmap import StarmapParallelization
 from multiprocessing import cpu_count, Manager
@@ -27,8 +27,11 @@ def update_config(args: Namespace):
     if args.prepare_executable:
         set_key(".env", "SHETRAN_PREPARE_EXECUTABLE", str(args.prepare_executable))
 
-def setup_algorithm(args: Namespace):
-    return NSGA2(pop_size=12, n_offsprings=12, eliminate_duplicates=True)
+def setup_algorithm(args: Namespace, n_threads: int):
+    pop = (100 // n_threads + 1) * n_threads
+    print(pop)
+    
+    return NSGA2(pop_size=pop, n_offsprings=pop, eliminate_duplicates=True, crossover= SBX(eta=15), mutation=PM(eta=5))
 
 
 def optimise(args: Namespace):
@@ -64,7 +67,7 @@ def optimise(args: Namespace):
     with Manager() as manager:
         shared_lock = manager.Lock()
 
-        n_threads = max(1, cpu_count() - 2)
+        n_threads = cpu_count()
         pool = ThreadPool(n_threads)
         runner = StarmapParallelization(pool.starmap)
 
@@ -81,15 +84,15 @@ def optimise(args: Namespace):
                 algorithm.problem.lock = shared_lock
             else:
                 print("Could not find checkpoint file! Starting fresh run.")
-                algorithm = setup_algorithm(args)
+                algorithm = setup_algorithm(args, n_threads)
         else:
             print("Starting fresh run.")
-            algorithm = setup_algorithm(args)
+            algorithm = setup_algorithm(args, n_threads)
 
         res = minimize(
             problem,
             algorithm,
-            termination=get_termination("n_gen", 3),
+            termination=get_termination("n_gen", n_threads*8),
             verbose=True,
             callback=Checkpoint(run_settings["checkpoint_path"]),
             copy_algorithm=False,
@@ -98,7 +101,4 @@ def optimise(args: Namespace):
         pool.close()
 
         print("Optimisation Complete.")
-        if type(res.exec_time) is int:
-            print(f"Time taken: {res.exec_time / 3600} hours")
-        else:
-            print(f"Time taken: {res.exec_time} seconds")
+        print(f"Time taken: {res.exec_time} seconds")

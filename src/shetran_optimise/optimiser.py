@@ -127,8 +127,8 @@ class ShetranProblem(ElementwiseProblem):
             except Exception as log_err:
                 print(f"Logging failed for {run_id}: {log_err}")
 
-            #if os.path.exists(run_dir):
-                #shutil.rmtree(run_dir, ignore_errors=True)
+            if os.path.exists(run_dir):
+                shutil.rmtree(run_dir, ignore_errors=True)
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -146,5 +146,6 @@ class Checkpoint(Callback):
         self.filename = filename
 
     def notify(self, algorithm):
+        print(f"Saving algorithm state to {self.filename}")
         with open(self.filename, "wb") as file:
             dill.dump(algorithm, file)
