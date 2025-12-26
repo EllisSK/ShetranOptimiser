@@ -27,7 +27,7 @@ def calculate_KGE(observed_values: pd.Series, simulated_values: pd.Series) -> fl
     return 1 - np.sqrt((r - 1) ** 2 + (alpha - 1) ** 2 + (beta - 1) ** 2)
 
 
-def calculate_RMSE(observed_values: pd.Series, simulated_values: pd.Series) -> float:
+def calculate_RMSE(observed_values, simulated_values) -> float:
     """
     Calculates the RMSE for a set of observed and simulated values.
 
@@ -88,8 +88,8 @@ def calculate_objective_function_metrics(
     log_kge = calculate_KGE(model_df["LogObservedFlow"], model_df["LogSimulatedFlow"])
 
     fdc_rmse = calculate_RMSE(
-        model_df["ObservedFlow"].sort_values(ascending=False),
-        model_df["SimulatedFlow"].sort_values(ascending=False),
+        model_df["ObservedFlow"].sort_values(ascending=False).values,
+        model_df["SimulatedFlow"].sort_values(ascending=False).values,
     )
 
     return (1 - kge, 1 - log_kge, fdc_rmse)
