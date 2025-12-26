@@ -1,6 +1,7 @@
 import subprocess
 import csv
 import json
+import time
 
 import xml.etree.ElementTree as ET
 
@@ -9,14 +10,8 @@ from pathlib import Path
 
 def run_shetran(exe_path: Path, rundata_path: Path):
     """
-    Executes a SHETRAN simulation.
-
-    :param exe_path: Full path to Shetran exe file location.
-    :type exe_path: Path
-    :param rundata_path: Full path to rundata file location.
-    :type rundata_path: Path
+    Executes a SHETRAN simulation and redirects terminal output to terminal.txt.
     """
-
     if not exe_path.exists():
         print(f"Error: Executable not found at {exe_path}")
         return
@@ -25,23 +20,56 @@ def run_shetran(exe_path: Path, rundata_path: Path):
         return
 
     working_dir = rundata_path.parent
+    pri_path = working_dir / f"output_{rundata_path.name[8:-4]}_pri.txt"
+    terminal_log_path = working_dir / "terminal.txt"
 
     command = [str(exe_path), "-f", str(rundata_path)]
 
     print(f"Starting SHETRAN run for: {working_dir.name}")
 
     try:
-        result = subprocess.run(
-            command, cwd=working_dir, capture_output=True, text=True, timeout=1200
-        )
+        start_time = time.time()
+        
+        with open(terminal_log_path, "w") as log_file:
+            process = subprocess.Popen(
+                command,
+                cwd=working_dir,
+                stdout=log_file,
+                stderr=log_file,
+                text=True
+            )
 
-        if not result.returncode == 0:
-            print(f"Run ID {working_dir.name} failed with error:\n {result.stderr}")
-        else:
+            while process.poll() is None:
+                # 1. Check for Timeout
+                if time.time() - start_time > 1200:
+                    print(f"Run ID {working_dir.name} timed out.")
+                    process.kill()
+                    break
+
+                if pri_path.exists():
+                    try:
+                        with open(pri_path, "r") as f:
+                            output = f.read()
+                            if "FATAL ERROR" in output:
+                                print(f"Run ID {working_dir.name} failed with fatal error.")
+                                process.kill()
+                                break
+                    except Exception:
+                        pass
+
+                time.sleep(5)
+
+        if process.returncode == 0:
             print(f"SHETRAN run completed successfully for: {working_dir.name}")
+        else:
+            print(f"SHETRAN run {working_dir.name} finished with return code: {process.returncode}")
 
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+        try:
+            process.kill()
+        except:
+            pass
 
 
 def run_preprocessor(prep_exe_path: Path, xml_file_path: Path):
