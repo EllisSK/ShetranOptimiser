@@ -51,7 +51,11 @@ def run_shetran(exe_path: Path, rundata_path: Path):
                         with open(pri_path, "r") as f:
                             output = f.read()
                             if "FATAL ERROR" in output:
-                                print(f"Run ID {working_dir.name} failed with fatal error.")
+                                print(f"Run ID {working_dir.name} FAILED with FATAL error.")
+                                process.kill()
+                                break
+                            if "### Error asummary and Advice ###" in output:
+                                print(f"Run ID {working_dir.name} FAILED with an error.")
                                 process.kill()
                                 break
                     except Exception:
@@ -61,6 +65,8 @@ def run_shetran(exe_path: Path, rundata_path: Path):
 
         if process.returncode == 0:
             print(f"SHETRAN run completed successfully for: {working_dir.name}")
+        elif process.returncode == None:
+            pass
         else:
             print(f"SHETRAN run {working_dir.name} finished with return code: {process.returncode}")
 
@@ -97,7 +103,7 @@ def run_preprocessor(prep_exe_path: Path, xml_file_path: Path):
 
     try:
         result = subprocess.run(
-            command, cwd=working_dir, capture_output=True, text=True
+            command, cwd=working_dir, capture_output=True, text=True, timeout=30
         )
 
         if result.returncode == 0:

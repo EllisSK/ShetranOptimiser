@@ -2,6 +2,7 @@ from argparse import ArgumentParser, Namespace
 from .cli import update_config, optimise
 
 def main():
+    print("Shetran-Optimiser v0.0.0")
     #Univeral args
     parser = ArgumentParser()
 
